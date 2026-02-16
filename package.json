@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Read-only mode for safe code analysis in pi",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "license": "EPL-2.0",
   "author": "Marko Kocic <marko@euptera.com>",
   "repository": {
@@ -11,12 +13,13 @@
     "url": "git@github.com:markokocic/pi-ask-mode.git"
   },
   "pi": {
-    "extensions": ["./extensions"]
+    "extensions": [
+      "./extensions"
+    ]
   },
-  "dependencies": {},
   "peerDependencies": {
-    "@mariozechner/pi-ai": "*",
     "@mariozechner/pi-agent-core": "*",
+    "@mariozechner/pi-ai": "*",
     "@mariozechner/pi-coding-agent": "*",
     "@mariozechner/pi-tui": "*",
     "@sinclair/typebox": "*"

@@ -13,11 +13,14 @@ Read-only mode for safe code analysis in pi.
 ## Features
 
 - **`/ask` command** - Toggle ask mode on/off
+- **`/ask <question>` command** - Ask a question (auto-enables ask mode if needed)
 - **Restricted toolset** - Only read-only tools available when enabled
 - **Bash allowlist** - Only safe, read-only bash commands are allowed
 - **Status indicator** - Shows "❓ ask" in footer when active
 
 ## Usage
+
+### Toggle Ask Mode
 
 ```
 /ask
@@ -30,6 +33,27 @@ Toggle ask mode. When enabled:
 
 When disabled:
 - Full access is restored with all your original tools
+
+### Ask a Question
+
+```
+/ask <question>
+```
+
+Ask a question and get an answer. This works in two ways:
+
+1. **If ask mode is already active**: The question is sent to the agent, answered, and you stay in ask mode.
+
+2. **If ask mode is not active**: The extension temporarily enables ask mode, answers your question, then disables ask mode automatically.
+
+Examples:
+```
+/ask What does this file do?
+/ask Explain the structure of the codebase
+/ask How do I use the utils function?
+```
+
+This is useful for quick read-only questions without manually toggling ask mode.
 
 ## Allowed Bash Commands
 

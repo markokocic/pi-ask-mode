@@ -5,7 +5,8 @@
  * When enabled, only read-only tools are available.
  *
  * Features:
- * - /ask command to toggle
+ * - /ask - toggle ask mode
+ * - /ask <question> - ask a question (auto-enables ask mode if needed)
  * - Bash restricted to allowlisted read-only commands
  */
 
@@ -47,25 +48,65 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 		ctx.ui.setWidget("ask-mode", undefined);
 	}
 
-	function toggleAskMode(ctx: ExtensionContext): void {
-		askModeEnabled = !askModeEnabled;
-
-		if (askModeEnabled) {
-			// Save original tools before switching to ask mode
-			originalTools = pi.getActiveTools();
-			pi.setActiveTools(ASK_MODE_TOOLS);
-			ctx.ui.notify(`Ask mode enabled. Tools: ${ASK_MODE_TOOLS.join(", ")}`);
-		} else {
-			// Restore original tools (or default to NORMAL_MODE_TOOLS if not set)
-			pi.setActiveTools(originalTools.length > 0 ? originalTools : NORMAL_MODE_TOOLS);
-			ctx.ui.notify("Ask mode disabled. Full access restored. All tools available.");
-		}
+	function activateAskMode(ctx: ExtensionContext): void {
+		// Save original tools before switching to ask mode
+		originalTools = pi.getActiveTools();
+		askModeEnabled = true;
+		pi.setActiveTools(ASK_MODE_TOOLS);
+		ctx.ui.notify(`Ask mode enabled. Tools: ${ASK_MODE_TOOLS.join(", ")}`);
 		updateStatus(ctx);
 	}
 
+	function deactivateAskMode(ctx: ExtensionContext): void {
+		askModeEnabled = false;
+		// Restore original tools (or default to NORMAL_MODE_TOOLS if not set)
+		pi.setActiveTools(originalTools.length > 0 ? originalTools : NORMAL_MODE_TOOLS);
+		ctx.ui.notify("Ask mode disabled. Full access restored. All tools available.");
+		updateStatus(ctx);
+	}
+
+	function toggleAskMode(ctx: ExtensionContext): void {
+		if (askModeEnabled) {
+			deactivateAskMode(ctx);
+		} else {
+			activateAskMode(ctx);
+		}
+	}
+
 	pi.registerCommand("ask", {
-		description: "Toggle ask mode (read-only)",
-		handler: async (_args, ctx) => toggleAskMode(ctx),
+		description: "Toggle ask mode (read-only) or ask a question with /ask <question>",
+		handler: async (args, ctx) => {
+			// If no arguments, just toggle ask mode (original behavior)
+			if (!args || args.trim() === "") {
+				toggleAskMode(ctx);
+				return;
+			}
+
+			// User provided a question - answer it
+			const question = args.trim();
+			const wasAskModeActive = askModeEnabled;
+
+			if (wasAskModeActive) {
+				// Ask mode already active - just answer and stay in ask mode
+				ctx.ui.notify("Answering in ask mode...", "info");
+				pi.sendUserMessage(question, { deliverAs: "steer" });
+				await ctx.waitForIdle();
+			} else {
+				// Ask mode not active - temporarily enable, answer, then disable
+				ctx.ui.notify("Activating ask mode to answer...", "info");
+
+				// Enable ask mode
+				activateAskMode(ctx);
+
+				// Send the question and wait for answer
+				pi.sendUserMessage(question, { deliverAs: "steer" });
+				await ctx.waitForIdle();
+
+				// Disable ask mode (restore original tools)
+				deactivateAskMode(ctx);
+				ctx.ui.notify("Ask mode disabled. Full access restored.", "info");
+			}
+		},
 	});
 
 	// Block destructive bash commands in ask mode
