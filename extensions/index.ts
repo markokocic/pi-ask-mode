@@ -116,7 +116,7 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 You are in ask mode - a read-only Q&A mode for safe code analysis.
 
 Restrictions:
-- You can only use: read, bash, grep, find, ls, questionnaire
+- You can only use: read, bash, grep, find, ls
 - You CANNOT use: edit, write (file modifications are disabled)
 - Bash is restricted to an allowlist of read-only commands
 

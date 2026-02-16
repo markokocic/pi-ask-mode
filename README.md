@@ -16,7 +16,7 @@ Read-only mode for safe code analysis in [pi coding agent](https://github.com/ba
 ```
 
 Toggle ask mode. When enabled:
-- Available tools: `read`, `bash`, `grep`, `find`, `ls`, `questionnaire`
+- Available tools: `read`, `bash`, `grep`, `find`, `ls`
 - `edit` and `write` tools are disabled
 - Bash commands are restricted to an allowlist (see below)
 

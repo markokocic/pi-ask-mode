@@ -1,10 +1,13 @@
 {
   "name": "pi-ask-mode",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Read-only mode for safe code analysis in pi",
   "keywords": [
-    "pi-package"
+    "pi",
+    "pi-package",
+    "pi-coding-agent",
+    "extension"
   ],
   "license": "EPL-2.0",
   "author": "Marko Kocic <marko@euptera.com>",
