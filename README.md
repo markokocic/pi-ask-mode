@@ -5,20 +5,27 @@ Read-only mode for safe code analysis in [pi coding agent](https://github.com/ba
 ## Features
 
 - **`/ask` command** - Toggle ask mode on/off
+- **`/ask <question>` command** - Enable ask mode and ask a question in one step
 - **Restricted toolset** - Only read-only tools available when enabled
 - **Bash allowlist** - Only safe, read-only bash commands are allowed
 - **Status indicator** - Shows "❓ ask" in footer when active
 
 ## Usage
 
+### Toggle Ask Mode
 ```
 /ask
 ```
-
-Toggle ask mode. When enabled:
+Toggle ask mode on/off. When enabled:
 - Available tools: `read`, `bash`, `grep`, `find`, `ls`
 - `edit` and `write` tools are disabled
 - Bash commands are restricted to an allowlist (see below)
+
+### Ask a Question
+```
+/ask what does this file do?
+```
+Enable ask mode (if not already enabled) and immediately ask a question. The agent will answer using only read-only tools.
 
 When disabled:
 - Full access is restored with all your original tools

@@ -64,8 +64,29 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 	}
 
 	pi.registerCommand("ask", {
-		description: "Toggle ask mode (read-only)",
-		handler: async (_args, ctx) => toggleAskMode(ctx),
+		description: "Toggle ask mode or ask a question in ask mode",
+		handler: async (args, ctx) => {
+			const question = args.trim();
+
+			if (question) {
+				// /ask with a question - enable ask mode and ask the question
+				if (!askModeEnabled) {
+					// Enable ask mode first
+					askModeEnabled = true;
+					// Save original tools before switching to ask mode
+					originalTools = pi.getActiveTools();
+					pi.setActiveTools(ASK_MODE_TOOLS);
+					updateStatus(ctx);
+					ctx.ui.notify(`Ask mode enabled. Tools: ${ASK_MODE_TOOLS.join(", ")}`);
+				}
+
+				// Send the question to the agent
+				pi.sendUserMessage(question);
+			} else {
+				// /ask without a message - just toggle
+				toggleAskMode(ctx);
+			}
+		},
 	});
 
 	// Block destructive bash commands in ask mode

@@ -1,6 +1,6 @@
 {
   "name": "pi-ask-mode",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "Read-only mode for safe code analysis in pi",
   "keywords": [
