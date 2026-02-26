@@ -14,9 +14,8 @@ import type { AssistantMessage, TextContent } from "@mariozechner/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { isSafeCommand } from "./utils.js";
 
-// Tools
-const ASK_MODE_TOOLS = ["read", "bash", "grep", "find", "ls"];
-const NORMAL_MODE_TOOLS = ["read", "bash", "edit", "write"];
+// Tools to block in ask mode (file modification tools)
+const BLOCKED_TOOLS = ["edit", "write"];
 
 // Type guard for assistant messages
 function isAssistantMessage(m: AgentMessage): m is AssistantMessage {
@@ -34,6 +33,20 @@ function getTextContent(message: AssistantMessage): string {
 export default function askModeExtension(pi: ExtensionAPI): void {
 	let askModeEnabled = false;
 	let originalTools: string[] = [];
+
+	// Dynamically get all tools except blocked ones (edit, write)
+	function getAskModeTools(): string[] {
+		const allTools = pi.getAllTools();
+		return allTools
+			.filter(t => !BLOCKED_TOOLS.includes(t.name))
+			.map(t => t.name);
+	}
+
+	// Get default normal mode tools (all available minus blocked)
+	function getNormalModeTools(): string[] {
+		const allTools = pi.getAllTools();
+		return allTools.map(t => t.name);
+	}
 
 	function updateStatus(ctx: ExtensionContext): void {
 		// Footer status
@@ -53,11 +66,13 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 		if (askModeEnabled) {
 			// Save original tools before switching to ask mode
 			originalTools = pi.getActiveTools();
-			pi.setActiveTools(ASK_MODE_TOOLS);
-			ctx.ui.notify(`Ask mode enabled. Tools: ${ASK_MODE_TOOLS.join(", ")}`);
+			const askModeTools = getAskModeTools();
+			pi.setActiveTools(askModeTools);
+			ctx.ui.notify(`Ask mode enabled. Tools: ${askModeTools.join(", ")}`);
 		} else {
-			// Restore original tools (or default to NORMAL_MODE_TOOLS if not set)
-			pi.setActiveTools(originalTools.length > 0 ? originalTools : NORMAL_MODE_TOOLS);
+			// Restore original tools (or default to all tools if not set)
+			const normalModeTools = originalTools.length > 0 ? originalTools : getNormalModeTools();
+			pi.setActiveTools(normalModeTools);
 			ctx.ui.notify("Ask mode disabled. Full access restored. All tools available.");
 		}
 		updateStatus(ctx);
@@ -75,9 +90,10 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 					askModeEnabled = true;
 					// Save original tools before switching to ask mode
 					originalTools = pi.getActiveTools();
-					pi.setActiveTools(ASK_MODE_TOOLS);
+					const askModeTools = getAskModeTools();
+					pi.setActiveTools(askModeTools);
 					updateStatus(ctx);
-					ctx.ui.notify(`Ask mode enabled. Tools: ${ASK_MODE_TOOLS.join(", ")}`);
+					ctx.ui.notify(`Ask mode enabled. Tools: ${askModeTools.join(", ")}`);
 				}
 
 				// Send the question to the agent
@@ -130,6 +146,9 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 	pi.on("before_agent_start", async () => {
 		if (!askModeEnabled) return;
 
+		const askModeTools = getAskModeTools();
+		const blockedTools = BLOCKED_TOOLS.join(", ");
+
 		return {
 			message: {
 				customType: "ask-mode-context",
@@ -137,8 +156,8 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 You are in ask mode - a read-only Q&A mode for safe code analysis.
 
 Restrictions:
-- You can only use: read, bash, grep, find, ls
-- You CANNOT use: edit, write (file modifications are disabled)
+- You can only use: ${askModeTools.join(", ")}
+- You CANNOT use: ${blockedTools} (file modifications are disabled)
 - Bash is restricted to an allowlist of read-only commands
 
 Answer the user's question. Do NOT attempt to make any changes.`,
