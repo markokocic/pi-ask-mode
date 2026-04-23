@@ -10,25 +10,11 @@
  */
 
 import type { AgentMessage } from "@mariozechner/pi-agent-core";
-import type { AssistantMessage, TextContent } from "@mariozechner/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { isSafeCommand } from "./utils.js";
 
 // Tools to block in ask mode (file modification tools)
 const BLOCKED_TOOLS = ["edit", "write"];
-
-// Type guard for assistant messages
-function isAssistantMessage(m: AgentMessage): m is AssistantMessage {
-	return m.role === "assistant" && Array.isArray(m.content);
-}
-
-// Extract text content from an assistant message
-function getTextContent(message: AssistantMessage): string {
-	return message.content
-		.filter((block): block is TextContent => block.type === "text")
-		.map((block) => block.text)
-		.join("\n");
-}
 
 export default function askModeExtension(pi: ExtensionAPI): void {
 	let askModeEnabled = false;
@@ -134,7 +120,7 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 				}
 				if (Array.isArray(content)) {
 					return !content.some(
-						(c) => c.type === "text" && (c as TextContent).text?.includes("[ASK MODE ACTIVE]"),
+						(c) => c.type === "text" && "text" in c && c.text?.includes("[ASK MODE ACTIVE]"),
 					);
 				}
 				return true;
@@ -143,16 +129,15 @@ export default function askModeExtension(pi: ExtensionAPI): void {
 	});
 
 	// Inject ask mode context before agent starts
-	pi.on("before_agent_start", async () => {
+	// v0.65.0: before_agent_start returns systemPromptAppend instead of message
+	pi.on("before_agent_start", async (_event) => {
 		if (!askModeEnabled) return;
 
 		const askModeTools = getAskModeTools();
 		const blockedTools = BLOCKED_TOOLS.join(", ");
 
-		return {
-			message: {
-				customType: "ask-mode-context",
-				content: `[ASK MODE ACTIVE]
+		const askModeContext = `
+[ASK MODE ACTIVE]
 You are in ask mode - a read-only Q&A mode for safe code analysis.
 
 Restrictions:
@@ -160,9 +145,8 @@ Restrictions:
 - You CANNOT use: ${blockedTools} (file modifications are disabled)
 - Bash is restricted to an allowlist of read-only commands
 
-Answer the user's question. Do NOT attempt to make any changes.`,
-				display: false,
-			},
-		};
+Answer the user's question. Do NOT attempt to make any changes.`;
+
+		return { systemPromptAppend: askModeContext };
 	});
 }
