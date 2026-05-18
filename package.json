@@ -1,6 +1,6 @@
 {
   "name": "pi-ask-mode",
-  "version": "1.0.5",
+  "version": "1.1",
   "type": "module",
   "description": "Read-only mode for safe code analysis in pi",
   "keywords": [
@@ -20,12 +20,17 @@
       "./extensions"
     ]
   },
-  "dependencies": {},
   "peerDependencies": {
-    "@mariozechner/pi-ai": "*",
-    "@mariozechner/pi-agent-core": "*",
-    "@mariozechner/pi-coding-agent": "*",
-    "@mariozechner/pi-tui": "*",
+    "@earendil-works/pi-agent-core": "^0.75.1",
+    "@earendil-works/pi-ai": "^0.75.1",
+    "@earendil-works/pi-coding-agent": "^0.75.1",
+    "@earendil-works/pi-tui": "^0.75.1",
     "@sinclair/typebox": "*"
+  },
+  "dependencies": {
+    "@earendil-works/pi-agent-core": "^0.75.1",
+    "@earendil-works/pi-ai": "^0.75.1",
+    "@earendil-works/pi-coding-agent": "^0.75.1",
+    "@earendil-works/pi-tui": "^0.75.1"
   }
 }

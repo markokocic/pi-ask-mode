@@ -9,8 +9,8 @@
  * - Bash restricted to allowlisted read-only commands
  */
 
-import type { AgentMessage } from "@mariozechner/pi-agent-core";
-import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
+import type { AgentMessage } from "@earendil-works/pi-agent-core";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { isSafeCommand } from "./utils.js";
 
 // Tools to block in ask mode (file modification tools)
